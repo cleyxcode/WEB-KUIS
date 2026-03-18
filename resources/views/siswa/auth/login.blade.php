@@ -31,7 +31,7 @@
                             animate-pulse-ring">
                     <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDSUNFRoge3dP3JrEJ0XTj64QAr4jP-gont2W9oR8F69Ldw5W3vWR2bVvClCv7Mn3HMRpLFAtb5oDDLBSz89V_j4ijH-jxUaWyFrxisfS1MHJx9M7QlNziDw1j75dqNZYU_cEeTj9oIcAElFzSXpnCdMGUaFWUtYFJorEgxOk9SpgBeO1Eia3mymQmEAYjKvQAsxUNYLrX_NH-F2zPR7tOgxEsKTvzzVnviE1eyBi8d3AbIBLtAzgh3usuHZXW8UhfMVylS6K8GJo"
                          alt="Maskot GAS-IPAS"
-                         class="w-28 h-28 sm:w-36 sm:h-36 lg:w-44 lg:h-44 object-contain drop-shadow-xl"/>
+                         class="w-28 h-28 sm:w-36 sm:h-36 lg:w-44 lg:h-44 object-cover rounded-full drop-shadow-xl"/>
                 </div>
                 <div class="absolute -top-2 -right-2 bg-accent text-white p-2 rounded-full shadow-lg animate-pop-in">
                     <span class="material-symbols-outlined text-2xl">rocket_launch</span>

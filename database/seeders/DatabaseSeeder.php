@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             MataPelajaranSeeder::class, // 2 mapel: IPA + IPS
             LencanaSeeder::class,       // 10 lencana
             SiswaSeeder::class,         // 10 siswa
+            MateriSeeder::class,        // 5 materi IPA + 5 materi IPS
             SoalSeeder::class,          // 10 soal IPA + 10 soal IPS
             KuisSeeder::class,          // 10 kuis (5 IPA + 5 IPS) + kuis_soal
             LencanaSiswaSeeder::class,  // distribusi lencana ke siswa
@@ -30,6 +31,7 @@ class DatabaseSeeder extends Seeder
                 ['mata_pelajaran','2 (IPA + IPS)'],
                 ['lencana',       '10'],
                 ['siswa',         '10'],
+                ['materi',        '10 (5 IPA + 5 IPS)'],
                 ['soal',          '20 (10 IPA + 10 IPS)'],
                 ['kuis',          '10 (5 IPA + 5 IPS)'],
                 ['kuis_soal',     '50 (5 soal × 10 kuis)'],
