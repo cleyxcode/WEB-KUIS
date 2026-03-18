@@ -39,7 +39,7 @@ Route::prefix('siswa')->name('siswa.')->group(function () {
             Route::get('/',                          [KuisController::class, 'index'])->name('index');
             Route::get('masuk',                      [KuisController::class, 'formMasuk'])->name('masuk');
             Route::post('masuk',                     [KuisController::class, 'prosesKode'])->name('masuk.post');
-            Route::post('{kodeKuis}/mulai',          [KuisController::class, 'mulai'])->name('mulai');
+            Route::match(['get', 'post'], '{kodeKuis}/mulai', [KuisController::class, 'mulai'])->name('mulai');
             Route::get('{kodeKuis}/kerjakan/{nomor}',[KuisController::class, 'kerjakan'])->name('kerjakan');
             Route::post('{kodeKuis}/jawab/{nomor}',  [KuisController::class, 'jawab'])->name('jawab');
             Route::post('{kodeKuis}/selesai',        [KuisController::class, 'selesai'])->name('selesai');
