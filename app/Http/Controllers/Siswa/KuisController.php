@@ -209,7 +209,7 @@ class KuisController extends Controller
         $totalSoal    = count($percobaan->urutan_acak);
         $nilai        = $totalSoal > 0 ? round(($jumlahBenar / $totalSoal) * 100, 2) : 0;
         $totalPoin    = $jawaban->sum('poin_diperoleh');
-        $waktu        = now()->diffInSeconds($percobaan->dimulai_pada);
+        $waktu        = (int) abs(now()->diffInSeconds($percobaan->dimulai_pada));
 
         DB::transaction(function () use ($percobaan, $siswa, $jumlahBenar, $jumlahSalah, $totalSoal, $nilai, $totalPoin, $waktu) {
             $percobaan->update([
