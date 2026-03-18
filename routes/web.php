@@ -4,6 +4,7 @@ use App\Http\Controllers\Siswa\AuthController;
 use App\Http\Controllers\Siswa\DashboardController;
 use App\Http\Controllers\Siswa\KuisController;
 use App\Http\Controllers\Siswa\LeaderboardController;
+use App\Http\Controllers\Siswa\MateriController;
 use App\Http\Controllers\Siswa\ProfilController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +30,13 @@ Route::prefix('siswa')->name('siswa.')->group(function () {
             Route::post('{kodeKuis}/jawab/{nomor}',  [KuisController::class, 'jawab'])->name('jawab');
             Route::post('{kodeKuis}/selesai',        [KuisController::class, 'selesai'])->name('selesai');
             Route::get('{kodeKuis}/hasil',           [KuisController::class, 'hasil'])->name('hasil');
+        });
+
+        // Materi
+        Route::prefix('materi')->name('materi.')->group(function () {
+            Route::get('/',          [MateriController::class, 'index'])->name('index');
+            Route::get('{materi}',   [MateriController::class, 'show'])->name('show');
+            Route::post('{materi}/klaim', [MateriController::class, 'klaim'])->name('klaim');
         });
 
         Route::get('leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');

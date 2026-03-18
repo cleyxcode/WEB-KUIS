@@ -6,10 +6,13 @@
 @php
 $navItems = [
     ['route' => 'siswa.dashboard',   'icon' => 'home',           'label' => 'Beranda'],
+    ['route' => 'siswa.materi.index','icon' => 'book_2',         'label' => 'Materi'],
     ['route' => 'siswa.kuis.index',  'icon' => 'sports_esports', 'label' => 'Kuis'],
     ['route' => 'siswa.leaderboard', 'icon' => 'leaderboard',    'label' => 'Peringkat'],
     ['route' => 'siswa.profil',      'icon' => 'person',         'label' => 'Profil'],
 ];
+// Active check: materi.* semua aktifkan tab Materi
+$materiRoutes = ['siswa.materi.index', 'siswa.materi.show'];
 $currentRoute = request()->route()->getName();
 @endphp
 
@@ -57,7 +60,10 @@ $currentRoute = request()->route()->getName();
         {{-- Nav --}}
         <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
             @foreach ($navItems as $item)
-                @php $active = $currentRoute === $item['route']; @endphp
+                @php
+                    $active = $currentRoute === $item['route']
+                        || ($item['route'] === 'siswa.materi.index' && in_array($currentRoute, $materiRoutes ?? []));
+                @endphp
                 <a href="{{ route($item['route']) }}"
                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200
                           {{ $active
@@ -163,9 +169,12 @@ $currentRoute = request()->route()->getName();
                 border-t border-primary/10 px-4 pb-5 pt-2 shadow-2xl">
         <div class="flex justify-around items-center max-w-md mx-auto">
             @foreach ($navItems as $item)
-                @php $active = $currentRoute === $item['route']; @endphp
+                @php
+                    $active = $currentRoute === $item['route']
+                        || ($item['route'] === 'siswa.materi.index' && in_array($currentRoute, $materiRoutes ?? []));
+                @endphp
                 <a href="{{ route($item['route']) }}"
-                   class="flex flex-col items-center gap-0.5 group min-w-[56px]">
+                   class="flex flex-col items-center gap-0.5 group min-w-[48px]">
                     <div class="size-10 rounded-full flex items-center justify-center transition-all duration-200
                                 {{ $active ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-slate-400 group-hover:bg-primary/10 group-hover:text-primary' }}">
                         <span class="material-symbols-outlined text-[22px]"

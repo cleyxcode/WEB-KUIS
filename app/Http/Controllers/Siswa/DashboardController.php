@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
 use App\Models\Kuis;
+use App\Models\Materi;
+use App\Models\RiwayatBaca;
 use App\Models\Siswa;
 use Illuminate\View\View;
 
@@ -19,10 +21,10 @@ class DashboardController extends Controller
             ->count() + 1;
 
         // Progress ke kelipatan 500 berikutnya
-        $kelipatan    = 500;
-        $poinDiLevel  = $siswa->total_poin % $kelipatan;
-        $progressPct  = $kelipatan > 0 ? round(($poinDiLevel / $kelipatan) * 100) : 0;
-        $targetPoin   = (floor($siswa->total_poin / $kelipatan) + 1) * $kelipatan;
+        $kelipatan   = 500;
+        $poinDiLevel = $siswa->total_poin % $kelipatan;
+        $progressPct = $kelipatan > 0 ? round(($poinDiLevel / $kelipatan) * 100) : 0;
+        $targetPoin  = (floor($siswa->total_poin / $kelipatan) + 1) * $kelipatan;
 
         $kuisAktif = Kuis::where('aktif', true)
             ->where(function ($q) {
@@ -43,9 +45,21 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        // Materi terbaru yang dipublikasi
+        $materiTerbaru = Materi::where('dipublikasi', true)
+            ->with('mataPelajaran')
+            ->latest()
+            ->take(8)
+            ->get();
+
+        // ID materi yang sudah dibaca siswa ini
+        $sudahBacaIds = RiwayatBaca::where('siswa_id', $siswa->id)
+            ->pluck('materi_id')
+            ->toArray();
+
         return view('siswa.dashboard', compact(
             'siswa', 'peringkat', 'progressPct', 'targetPoin',
-            'kuisAktif', 'riwayatKuis'
+            'kuisAktif', 'riwayatKuis', 'materiTerbaru', 'sudahBacaIds'
         ));
     }
 }
