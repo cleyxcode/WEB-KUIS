@@ -103,6 +103,15 @@
             <span class="material-symbols-outlined text-[20px]">close</span>
         </button>
 
+        {{-- Tombol musik --}}
+        <button id="btn-musik" onclick="toggleMusik()"
+                title="Musik Kuis"
+                class="size-10 flex items-center justify-center rounded-full shrink-0
+                       bg-primary/10 text-primary
+                       hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-[20px]" id="icon-musik">music_note</span>
+        </button>
+
         <span class="text-sm font-extrabold text-slate-700 shrink-0">
             Soal <span class="text-primary">{{ $nomor }}</span>/{{ $total }}
         </span>
@@ -355,6 +364,11 @@
 </div>
 
 <div id="confetti-container" class="pointer-events-none fixed inset-0 z-[99] overflow-hidden"></div>
+
+{{-- Audio Musik Kuis --}}
+<audio id="bgm-kuis" loop preload="auto">
+    <source src="{{ asset('sounds/kuis-bgm.mp3') }}" type="audio/mpeg">
+</audio>
 @endsection
 
 @push('scripts')
@@ -493,6 +507,7 @@ function lanjutSoal() {
     btn.disabled = true;
     btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-xl">hourglass_empty</span>`;
     if (IS_LAST) {
+        bgm.pause(); // ← matikan musik saat kuis selesai
         InlineLoader.show('Menghitung nilai kamu... 🎯');
         const form = document.createElement('form');
         form.method = 'POST';
@@ -508,12 +523,18 @@ function lanjutSoal() {
 
 // ── Overlay Keluar ─────────────────────────────────────────────
 function konfirmasiKeluar() {
+    bgm.pause(); // ← matikan musik saat overlay keluar muncul
     const ov = document.getElementById('overlay-keluar');
     ov.classList.remove('hidden'); ov.classList.add('flex');
+}
+function tutupOverlayDanLanjut() {
+    // jika batal keluar, nyalakan kembali musik
+    if (!musikMati) bgm.play().catch(() => {});
 }
 function tutupOverlay() {
     const ov = document.getElementById('overlay-keluar');
     ov.classList.add('hidden'); ov.classList.remove('flex');
+    if (!musikMati) bgm.play().catch(() => {}); // nyalakan kembali jika batal keluar
 }
 
 // ── Zoom Gambar ────────────────────────────────────────────────
@@ -535,6 +556,32 @@ function spawnConfetti() {
     }
 }
 
+// ── Musik ──────────────────────────────────────────────────────
+const bgm       = document.getElementById('bgm-kuis');
+const iconMusik = document.getElementById('icon-musik');
+const btnMusik  = document.getElementById('btn-musik');
+let musikMati   = localStorage.getItem('kuis_musik_mati') === '1';
+
+function applyMusikState() {
+    if (musikMati) {
+        bgm.pause();
+        iconMusik.textContent = 'music_off';
+        btnMusik.classList.replace('bg-primary/10', 'bg-slate-100');
+        btnMusik.classList.replace('text-primary', 'text-slate-400');
+    } else {
+        bgm.play().catch(() => {}); // browser autoplay policy — gagal diam saja
+        iconMusik.textContent = 'music_note';
+        btnMusik.classList.replace('bg-slate-100', 'bg-primary/10');
+        btnMusik.classList.replace('text-slate-400', 'text-primary');
+    }
+}
+
+function toggleMusik() {
+    musikMati = !musikMati;
+    localStorage.setItem('kuis_musik_mati', musikMati ? '1' : '0');
+    applyMusikState();
+}
+
 // ── Init ───────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     updateRing(waktuSisa);
@@ -543,6 +590,18 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.opsi-btn').forEach(b => b.disabled = true);
     } else {
         startTimer();
+    }
+
+    // Mulai musik (perlu interaksi user — browser autoplay policy)
+    bgm.volume = 0.35;
+    applyMusikState();
+
+    // Fallback: coba play saat pertama kali user klik apapun di halaman
+    if (!musikMati) {
+        document.addEventListener('pointerdown', function tryPlay() {
+            bgm.play().catch(() => {});
+            document.removeEventListener('pointerdown', tryPlay);
+        }, { once: true });
     }
 });
 </script>
