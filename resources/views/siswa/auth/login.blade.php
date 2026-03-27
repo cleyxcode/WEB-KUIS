@@ -189,7 +189,7 @@
                         <div class="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
                     </div>
 
-                    <a href="{{ url('/guru') }}"
+                    <a href="{{ url('/admin') }}"
                        class="w-full h-12 sm:h-14
                               bg-white dark:bg-slate-800
                               border-2 border-slate-200 dark:border-slate-600
