@@ -181,6 +181,28 @@
                             Kode dikasih sama gurumu ya!
                         </p>
                     </div>
+
+                    {{-- Link ke panel guru --}}
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
+                        <span class="text-slate-400 text-xs font-medium">atau</span>
+                        <div class="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
+                    </div>
+
+                    <a href="{{ url('/guru') }}"
+                       class="w-full h-12 sm:h-14
+                              bg-white dark:bg-slate-800
+                              border-2 border-slate-200 dark:border-slate-600
+                              hover:border-primary hover:bg-primary/5 dark:hover:border-primary
+                              text-slate-700 dark:text-slate-300 hover:text-primary
+                              rounded-full
+                              text-sm sm:text-base font-bold
+                              shadow-sm hover:shadow-md
+                              transition-all duration-200
+                              flex items-center justify-center gap-2.5">
+                        <span class="material-symbols-outlined text-xl">school</span>
+                        Masuk sebagai Guru
+                    </a>
                 </div>
             </form>
 
