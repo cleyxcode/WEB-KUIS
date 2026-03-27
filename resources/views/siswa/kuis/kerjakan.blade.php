@@ -561,17 +561,48 @@ const bgm       = document.getElementById('bgm-kuis');
 const iconMusik = document.getElementById('icon-musik');
 const btnMusik  = document.getElementById('btn-musik');
 let musikMati   = localStorage.getItem('kuis_musik_mati') === '1';
+let autoplayDone = false;
+
+// Simpan posisi + waktu sistem saat halaman ditinggal
+function simpanPosisiMusik() {
+    if (!bgm.paused && !musikMati) {
+        sessionStorage.setItem('bgm_pos', bgm.currentTime);
+        sessionStorage.setItem('bgm_ts',  Date.now());
+    }
+}
+
+// Restore posisi setelah page reload (agar musik terasa tidak putus)
+function restorePosisiMusik() {
+    const pos = parseFloat(sessionStorage.getItem('bgm_pos') || '0');
+    const ts  = parseInt(sessionStorage.getItem('bgm_ts')  || '0');
+    if (!pos || !ts) return;
+
+    const durasi   = bgm.duration || 0;
+    const elapsed  = (Date.now() - ts) / 1000;
+    let   newPos   = pos + elapsed;
+
+    // Wrap around jika melewati durasi (karena loop)
+    if (durasi > 0) newPos = newPos % durasi;
+
+    bgm.currentTime = newPos;
+    sessionStorage.removeItem('bgm_pos');
+    sessionStorage.removeItem('bgm_ts');
+}
+
+function playMusik() {
+    bgm.play().then(() => { autoplayDone = true; }).catch(() => {});
+}
 
 function applyMusikState() {
     if (musikMati) {
         bgm.pause();
         iconMusik.textContent = 'music_off';
         btnMusik.classList.replace('bg-primary/10', 'bg-slate-100');
-        btnMusik.classList.replace('text-primary', 'text-slate-400');
+        btnMusik.classList.replace('text-primary',   'text-slate-400');
     } else {
-        bgm.play().catch(() => {}); // browser autoplay policy — gagal diam saja
+        playMusik();
         iconMusik.textContent = 'music_note';
-        btnMusik.classList.replace('bg-slate-100', 'bg-primary/10');
+        btnMusik.classList.replace('bg-slate-100',   'bg-primary/10');
         btnMusik.classList.replace('text-slate-400', 'text-primary');
     }
 }
@@ -581,6 +612,15 @@ function toggleMusik() {
     localStorage.setItem('kuis_musik_mati', musikMati ? '1' : '0');
     applyMusikState();
 }
+
+// Auto-resume jika musik mati sendiri (misal karena browser throttle)
+bgm.addEventListener('pause', () => {
+    if (!musikMati && autoplayDone) {
+        setTimeout(() => {
+            if (bgm.paused && !musikMati) playMusik();
+        }, 800);
+    }
+});
 
 // ── Init ───────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -592,17 +632,25 @@ document.addEventListener('DOMContentLoaded', () => {
         startTimer();
     }
 
-    // Mulai musik (perlu interaksi user — browser autoplay policy)
     bgm.volume = 0.35;
+
+    // Restore posisi musik agar terasa tidak putus antar soal
+    bgm.addEventListener('canplay', restorePosisiMusik, { once: true });
+
     applyMusikState();
 
-    // Fallback: coba play saat pertama kali user klik apapun di halaman
+    // Fallback: coba play saat pertama kali user menyentuh layar
     if (!musikMati) {
         document.addEventListener('pointerdown', function tryPlay() {
-            bgm.play().catch(() => {});
-            document.removeEventListener('pointerdown', tryPlay);
+            if (bgm.paused) playMusik();
         }, { once: true });
     }
+
+    // Simpan posisi sebelum pindah halaman
+    window.addEventListener('beforeunload', simpanPosisiMusik);
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) simpanPosisiMusik();
+    });
 });
 </script>
 @endpush
