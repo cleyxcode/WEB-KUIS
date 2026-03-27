@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\FisherYatesShuffleService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -63,5 +64,31 @@ class Kuis extends Model
     public function percobaanKuis(): HasMany
     {
         return $this->hasMany(PercobaanKuis::class);
+    }
+
+    /**
+     * Menghasilkan urutan soal dan pengacakan opsi untuk satu sesi percobaan kuis.
+     *
+     * Menggunakan Fisher-Yates Shuffle agar setiap siswa mendapat
+     * kombinasi soal dan posisi opsi yang berbeda-beda.
+     *
+     * @return array{soal_ids: array, opsi_acak: array}
+     */
+    public function buatPengacakan(): array
+    {
+        $semuaSoalIds = $this->soal()->pluck('soal.id')->toArray();
+
+        $soalIds = $this->acak_soal
+            ? FisherYatesShuffleService::acakSoal($semuaSoalIds, $this->jumlah_soal)
+            : array_slice($semuaSoalIds, 0, $this->jumlah_soal);
+
+        $opsiAcak = $this->acak_opsi
+            ? FisherYatesShuffleService::acakOpsiPerSoal($soalIds)
+            : [];
+
+        return [
+            'soal_ids'  => $soalIds,
+            'opsi_acak' => $opsiAcak,
+        ];
     }
 }

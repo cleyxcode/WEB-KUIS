@@ -8,6 +8,7 @@ use App\Models\PercobaanKuis;
 use App\Models\JawabanPercobaan;
 use App\Models\LogPoin;
 use App\Models\Siswa;
+use App\Services\FisherYatesShuffleService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -96,29 +97,16 @@ class KuisController extends Controller
             ->first();
 
         if (! $percobaan) {
-            $soalIds = $kuis->soal()->pluck('soal.id')->toArray();
-
-            if ($kuis->acak_soal) {
-                shuffle($soalIds);
-            }
-
-            $soalIds    = array_slice($soalIds, 0, $kuis->jumlah_soal);
-            $opsiAcak   = [];
-
-            if ($kuis->acak_opsi) {
-                foreach ($soalIds as $id) {
-                    $opsi = ['a', 'b', 'c', 'd'];
-                    shuffle($opsi);
-                    $opsiAcak[$id] = $opsi;
-                }
-            }
+            // Terapkan Fisher-Yates Shuffle untuk mengacak soal dan opsi jawaban.
+            // Setiap siswa mendapat permutasi unik sehingga potensi kecurangan diminimalisir.
+            $pengacakan = $kuis->buatPengacakan();
 
             $percobaan = PercobaanKuis::create([
                 'kuis_id'      => $kuis->id,
                 'siswa_id'     => $siswa->id,
-                'urutan_acak'  => $soalIds,
-                'opsi_acak'    => $opsiAcak,
-                'total_soal'   => count($soalIds),
+                'urutan_acak'  => $pengacakan['soal_ids'],
+                'opsi_acak'    => $pengacakan['opsi_acak'],
+                'total_soal'   => count($pengacakan['soal_ids']),
                 'status'       => 'berlangsung',
                 'dimulai_pada' => now(),
             ]);
