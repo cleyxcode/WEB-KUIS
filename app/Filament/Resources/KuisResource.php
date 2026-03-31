@@ -14,7 +14,10 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Illuminate\Support\Str;
 use Filament\Resources\Resource;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
@@ -41,7 +44,8 @@ class KuisResource extends Resource
                 ->label('Mata Pelajaran')
                 ->options(MataPelajaran::orderBy('urutan')->pluck('nama', 'id'))
                 ->required()
-                ->live(),
+                ->live()
+                ->afterStateUpdated(fn (Set $set) => $set('soal', [])),
 
             TextInput::make('judul')
                 ->label('Judul')
@@ -54,19 +58,17 @@ class KuisResource extends Resource
 
             CheckboxList::make('soal')
                 ->label('Pilih Soal')
-                ->relationship('soal', 'teks_soal')
-                ->options(function (Get $get) {
-                    $mapelId = $get('mata_pelajaran_id');
-                    if (! $mapelId) {
-                        return [];
-                    }
-
-                    return Soal::where('mata_pelajaran_id', $mapelId)
-                        ->get()
-                        ->mapWithKeys(fn ($soal) => [
-                            $soal->id => '[' . strtoupper($soal->jawaban_benar) . '] ' . \Str::limit($soal->teks_soal, 80),
-                        ]);
-                })
+                ->relationship(
+                    name: 'soal',
+                    titleAttribute: 'teks_soal',
+                    modifyQueryUsing: fn (Builder $query, Get $get) => $query->when(
+                        $get('mata_pelajaran_id'),
+                        fn (Builder $q, $mapelId) => $q->where('mata_pelajaran_id', $mapelId)
+                    ),
+                )
+                ->getOptionLabelFromRecordUsing(
+                    fn (Soal $record) => '[' . strtoupper($record->jawaban_benar) . '] ' . Str::limit($record->teks_soal, 80)
+                )
                 ->searchable()
                 ->bulkToggleable()
                 ->columnSpanFull(),
@@ -185,9 +187,4 @@ class KuisResource extends Resource
         ];
     }
 
-    public static function mutateFormDataBeforeCreate(array $data): array
-    {
-        $data['user_id'] = auth()->id();
-        return $data;
-    }
 }

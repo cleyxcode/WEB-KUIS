@@ -167,9 +167,4 @@ class MateriResource extends Resource
         ];
     }
 
-    public static function mutateFormDataBeforeCreate(array $data): array
-    {
-        $data['user_id'] = auth()->id();
-        return $data;
-    }
 }
