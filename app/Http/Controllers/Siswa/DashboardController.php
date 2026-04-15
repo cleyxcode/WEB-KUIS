@@ -11,9 +11,13 @@ use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function index(): View
+    public function index(\App\Services\BadgeService $badgeService): View
     {
         $siswa = Siswa::with('lencana')->findOrFail(session('siswa_id'));
+
+        // Cek lencana baru
+        $badgeService->checkAndAward($siswa);
+        $siswa->load('lencana'); // Reload lencana setelah dicek
 
         // Hitung peringkat
         $peringkat = Siswa::where('aktif', true)
@@ -21,10 +25,10 @@ class DashboardController extends Controller
             ->count() + 1;
 
         // Progress ke kelipatan 500 berikutnya
-        $kelipatan   = 500;
+        $kelipatan = 500;
         $poinDiLevel = $siswa->total_poin % $kelipatan;
         $progressPct = $kelipatan > 0 ? round(($poinDiLevel / $kelipatan) * 100) : 0;
-        $targetPoin  = (floor($siswa->total_poin / $kelipatan) + 1) * $kelipatan;
+        $targetPoin = (floor($siswa->total_poin / $kelipatan) + 1) * $kelipatan;
 
         $kuisAktif = Kuis::where('aktif', true)
             ->where(function ($q) {
@@ -58,8 +62,14 @@ class DashboardController extends Controller
             ->toArray();
 
         return view('siswa.dashboard', compact(
-            'siswa', 'peringkat', 'progressPct', 'targetPoin',
-            'kuisAktif', 'riwayatKuis', 'materiTerbaru', 'sudahBacaIds'
+            'siswa',
+            'peringkat',
+            'progressPct',
+            'targetPoin',
+            'kuisAktif',
+            'riwayatKuis',
+            'materiTerbaru',
+            'sudahBacaIds'
         ));
     }
 }

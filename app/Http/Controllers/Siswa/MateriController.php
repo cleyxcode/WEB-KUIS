@@ -17,7 +17,7 @@ class MateriController extends Controller
 
         $mapel = MataPelajaran::orderBy('urutan')->get();
         $jenisFilter = $request->query('jenis');
-        $cari        = trim($request->query('cari', ''));
+        $cari = trim($request->query('cari', ''));
 
         $query = Materi::with('mataPelajaran')
             ->where('dipublikasi', true)
@@ -25,14 +25,14 @@ class MateriController extends Controller
             ->orderBy('created_at');
 
         if ($jenisFilter && in_array($jenisFilter, ['IPA', 'IPS'])) {
-            $query->whereHas('mataPelajaran', fn ($q) => $q->where('jenis', $jenisFilter));
+            $query->whereHas('mataPelajaran', fn($q) => $q->where('jenis', $jenisFilter));
         }
 
         if ($cari !== '') {
             $query->where(function ($q) use ($cari) {
                 $q->where('judul', 'like', "%{$cari}%")
-                  ->orWhere('bab', 'like', "%{$cari}%")
-                  ->orWhere('deskripsi', 'like', "%{$cari}%");
+                    ->orWhere('bab', 'like', "%{$cari}%")
+                    ->orWhere('deskripsi', 'like', "%{$cari}%");
             });
         }
 
@@ -43,18 +43,23 @@ class MateriController extends Controller
             ->pluck('materi_id')
             ->toArray();
 
-        $totalMateri  = $materiList->count();
+        $totalMateri = $materiList->count();
         $jumlahDibaca = collect($sudahBaca)->intersect($materiList->pluck('id'))->count();
 
         return view('siswa.materi.index', compact(
-            'materiList', 'mapel', 'jenisFilter', 'cari',
-            'sudahBaca', 'totalMateri', 'jumlahDibaca'
+            'materiList',
+            'mapel',
+            'jenisFilter',
+            'cari',
+            'sudahBaca',
+            'totalMateri',
+            'jumlahDibaca'
         ));
     }
 
     public function show(Materi $materi)
     {
-        if (! $materi->dipublikasi) {
+        if (!$materi->dipublikasi) {
             abort(404);
         }
 
@@ -70,7 +75,7 @@ class MateriController extends Controller
 
     public function klaim(Request $request, Materi $materi)
     {
-        if (! $materi->dipublikasi) {
+        if (!$materi->dipublikasi) {
             abort(404);
         }
 
@@ -90,9 +95,9 @@ class MateriController extends Controller
 
         // Simpan riwayat baca
         RiwayatBaca::create([
-            'siswa_id'      => $siswa->id,
-            'materi_id'     => $materi->id,
-            'dibaca_pada'   => now(),
+            'siswa_id' => $siswa->id,
+            'materi_id' => $materi->id,
+            'dibaca_pada' => now(),
             'poin_diperoleh' => $poin,
         ]);
 
@@ -101,9 +106,9 @@ class MateriController extends Controller
 
         // Log poin
         LogPoin::create([
-            'siswa_id'  => $siswa->id,
-            'poin'      => $poin,
-            'sumber'    => 'materi',
+            'siswa_id' => $siswa->id,
+            'poin' => $poin,
+            'sumber' => 'materi',
             'sumber_id' => $materi->id,
             'keterangan' => 'Membaca materi: ' . $materi->judul,
         ]);
@@ -111,6 +116,9 @@ class MateriController extends Controller
         // Refresh session siswa
         $siswa->refresh();
         session(['siswa' => $siswa]);
+
+        // Cek lencana
+        app(\App\Services\BadgeService::class)->checkAndAward($siswa);
 
         return redirect()->route('siswa.materi.show', $materi->id)
             ->with('success', "+{$poin} poin didapat! Terus semangat belajar! 🎉");

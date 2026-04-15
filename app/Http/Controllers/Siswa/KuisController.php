@@ -28,13 +28,13 @@ class KuisController extends Controller
             'kode_kuis' => ['required', 'string', 'size:6'],
         ], [
             'kode_kuis.required' => 'Kode kuis tidak boleh kosong.',
-            'kode_kuis.size'     => 'Kode kuis harus 6 karakter.',
+            'kode_kuis.size' => 'Kode kuis harus 6 karakter.',
         ]);
 
         $kode = strtoupper(trim($request->kode_kuis));
         $kuis = \App\Models\Kuis::where('kode_kuis', $kode)->where('aktif', true)->first();
 
-        if (! $kuis) {
+        if (!$kuis) {
             return back()->withErrors(['kode_kuis' => 'Kode kuis tidak ditemukan atau sudah tidak aktif.']);
         }
 
@@ -77,7 +77,7 @@ class KuisController extends Controller
     public function mulai(string $kodeKuis): RedirectResponse
     {
         $siswa = Siswa::findOrFail(session('siswa_id'));
-        $kuis  = Kuis::where('kode_kuis', $kodeKuis)->where('aktif', true)->firstOrFail();
+        $kuis = Kuis::where('kode_kuis', $kodeKuis)->where('aktif', true)->firstOrFail();
 
         // cegah mulai ulang jika sudah selesai
         $sudahSelesai = PercobaanKuis::where('kuis_id', $kuis->id)
@@ -96,18 +96,18 @@ class KuisController extends Controller
             ->where('status', 'berlangsung')
             ->first();
 
-        if (! $percobaan) {
+        if (!$percobaan) {
             // Terapkan Fisher-Yates Shuffle untuk mengacak soal dan opsi jawaban.
             // Setiap siswa mendapat permutasi unik sehingga potensi kecurangan diminimalisir.
             $pengacakan = $kuis->buatPengacakan();
 
             $percobaan = PercobaanKuis::create([
-                'kuis_id'      => $kuis->id,
-                'siswa_id'     => $siswa->id,
-                'urutan_acak'  => $pengacakan['soal_ids'],
-                'opsi_acak'    => $pengacakan['opsi_acak'],
-                'total_soal'   => count($pengacakan['soal_ids']),
-                'status'       => 'berlangsung',
+                'kuis_id' => $kuis->id,
+                'siswa_id' => $siswa->id,
+                'urutan_acak' => $pengacakan['soal_ids'],
+                'opsi_acak' => $pengacakan['opsi_acak'],
+                'total_soal' => count($pengacakan['soal_ids']),
+                'status' => 'berlangsung',
                 'dimulai_pada' => now(),
             ]);
         }
@@ -117,19 +117,19 @@ class KuisController extends Controller
 
     public function kerjakan(string $kodeKuis, int $nomor): View
     {
-        $siswa     = Siswa::findOrFail(session('siswa_id'));
-        $kuis      = Kuis::where('kode_kuis', $kodeKuis)->firstOrFail();
+        $siswa = Siswa::findOrFail(session('siswa_id'));
+        $kuis = Kuis::where('kode_kuis', $kodeKuis)->firstOrFail();
         $percobaan = PercobaanKuis::where('kuis_id', $kuis->id)
             ->where('siswa_id', $siswa->id)
             ->where('status', 'berlangsung')
             ->firstOrFail();
 
-        $soalIds   = $percobaan->urutan_acak;
-        $total     = count($soalIds);
-        $nomor     = max(1, min($nomor, $total));
-        $soalId    = $soalIds[$nomor - 1];
+        $soalIds = $percobaan->urutan_acak;
+        $total = count($soalIds);
+        $nomor = max(1, min($nomor, $total));
+        $soalId = $soalIds[$nomor - 1];
 
-        $soal      = \App\Models\Soal::findOrFail($soalId);
+        $soal = \App\Models\Soal::findOrFail($soalId);
         $opsiUrutan = $percobaan->opsi_acak[$soalId] ?? ['a', 'b', 'c', 'd'];
 
         $jawabanSudah = JawabanPercobaan::where('percobaan_id', $percobaan->id)
@@ -137,8 +137,13 @@ class KuisController extends Controller
             ->first();
 
         return view('siswa.kuis.kerjakan', compact(
-            'kuis', 'percobaan', 'soal', 'opsiUrutan',
-            'nomor', 'total', 'jawabanSudah'
+            'kuis',
+            'percobaan',
+            'soal',
+            'opsiUrutan',
+            'nomor',
+            'total',
+            'jawabanSudah'
         ));
     }
 
@@ -148,78 +153,81 @@ class KuisController extends Controller
             'jawaban' => ['required', 'in:a,b,c,d'],
         ]);
 
-        $siswa     = Siswa::findOrFail(session('siswa_id'));
-        $kuis      = Kuis::where('kode_kuis', $kodeKuis)->firstOrFail();
+        $siswa = Siswa::findOrFail(session('siswa_id'));
+        $kuis = Kuis::where('kode_kuis', $kodeKuis)->firstOrFail();
         $percobaan = PercobaanKuis::where('kuis_id', $kuis->id)
             ->where('siswa_id', $siswa->id)
             ->where('status', 'berlangsung')
             ->firstOrFail();
 
-        $soalIds  = $percobaan->urutan_acak;
-        $soalId   = $soalIds[$nomor - 1];
-        $soal     = \App\Models\Soal::findOrFail($soalId);
+        $soalIds = $percobaan->urutan_acak;
+        $soalId = $soalIds[$nomor - 1];
+        $soal = \App\Models\Soal::findOrFail($soalId);
 
-        $benar        = $request->jawaban === $soal->jawaban_benar;
+        $benar = $request->jawaban === $soal->jawaban_benar;
         $waktuMenjawab = $request->waktu_menjawab ?? 0;
-        $poin         = $benar ? max(10, 30 - $waktuMenjawab) : 0;
+        $poin = $benar ? max(10, 30 - $waktuMenjawab) : 0;
 
         JawabanPercobaan::updateOrCreate(
             ['percobaan_id' => $percobaan->id, 'soal_id' => $soalId],
             [
                 'jawaban_dipilih' => $request->jawaban,
-                'benar'           => $benar,
-                'waktu_menjawab'  => $waktuMenjawab,
-                'poin_diperoleh'  => $poin,
-                'dijawab_pada'    => now(),
+                'benar' => $benar,
+                'waktu_menjawab' => $waktuMenjawab,
+                'poin_diperoleh' => $poin,
+                'dijawab_pada' => now(),
             ]
         );
 
         return response()->json([
-            'benar'           => $benar,
-            'jawaban_benar'   => $soal->jawaban_benar,
-            'penjelasan'      => $kuis->tampilkan_penjelasan ? $soal->penjelasan : null,
-            'poin'            => $poin,
+            'benar' => $benar,
+            'jawaban_benar' => $soal->jawaban_benar,
+            'penjelasan' => $kuis->tampilkan_penjelasan ? $soal->penjelasan : null,
+            'poin' => $poin,
         ]);
     }
 
     public function selesai(string $kodeKuis): RedirectResponse
     {
-        $siswa     = Siswa::findOrFail(session('siswa_id'));
-        $kuis      = Kuis::where('kode_kuis', $kodeKuis)->firstOrFail();
+        $siswa = Siswa::findOrFail(session('siswa_id'));
+        $kuis = Kuis::where('kode_kuis', $kodeKuis)->firstOrFail();
         $percobaan = PercobaanKuis::where('kuis_id', $kuis->id)
             ->where('siswa_id', $siswa->id)
             ->where('status', 'berlangsung')
             ->firstOrFail();
 
-        $jawaban      = JawabanPercobaan::where('percobaan_id', $percobaan->id)->get();
-        $jumlahBenar  = $jawaban->where('benar', true)->count();
-        $jumlahSalah  = $jawaban->where('benar', false)->count();
-        $totalSoal    = count($percobaan->urutan_acak);
-        $nilai        = $totalSoal > 0 ? round(($jumlahBenar / $totalSoal) * 100, 2) : 0;
-        $totalPoin    = $jawaban->sum('poin_diperoleh');
-        $waktu        = (int) abs(now()->diffInSeconds($percobaan->dimulai_pada));
+        $jawaban = JawabanPercobaan::where('percobaan_id', $percobaan->id)->get();
+        $jumlahBenar = $jawaban->where('benar', true)->count();
+        $jumlahSalah = $jawaban->where('benar', false)->count();
+        $totalSoal = count($percobaan->urutan_acak);
+        $nilai = $totalSoal > 0 ? round(($jumlahBenar / $totalSoal) * 100, 2) : 0;
+        $totalPoin = $jawaban->sum('poin_diperoleh');
+        $waktu = (int) abs(now()->diffInSeconds($percobaan->dimulai_pada));
 
         DB::transaction(function () use ($percobaan, $siswa, $jumlahBenar, $jumlahSalah, $totalSoal, $nilai, $totalPoin, $waktu) {
             $percobaan->update([
-                'jumlah_benar'     => $jumlahBenar,
-                'jumlah_salah'     => $jumlahSalah,
-                'total_soal'       => $totalSoal,
-                'nilai'            => $nilai,
-                'poin_diperoleh'   => $totalPoin,
+                'jumlah_benar' => $jumlahBenar,
+                'jumlah_salah' => $jumlahSalah,
+                'total_soal' => $totalSoal,
+                'nilai' => $nilai,
+                'poin_diperoleh' => $totalPoin,
                 'waktu_pengerjaan' => $waktu,
-                'status'           => 'selesai',
+                'status' => 'selesai',
                 'diselesaikan_pada' => now(),
             ]);
 
             $siswa->increment('total_poin', $totalPoin);
 
             LogPoin::create([
-                'siswa_id'   => $siswa->id,
-                'poin'       => $totalPoin,
-                'sumber'     => 'kuis',
-                'sumber_id'  => $percobaan->kuis_id,
+                'siswa_id' => $siswa->id,
+                'poin' => $totalPoin,
+                'sumber' => 'kuis',
+                'sumber_id' => $percobaan->kuis_id,
                 'keterangan' => 'Kuis: ' . $percobaan->kuis->judul,
             ]);
+
+            // Cek lencana
+            app(\App\Services\BadgeService::class)->checkAndAward($siswa);
         });
 
         return redirect()->route('siswa.kuis.hasil', $kodeKuis);
@@ -227,8 +235,8 @@ class KuisController extends Controller
 
     public function hasil(string $kodeKuis): View
     {
-        $siswa     = Siswa::findOrFail(session('siswa_id'));
-        $kuis      = Kuis::where('kode_kuis', $kodeKuis)->with('mataPelajaran')->firstOrFail();
+        $siswa = Siswa::findOrFail(session('siswa_id'));
+        $kuis = Kuis::where('kode_kuis', $kodeKuis)->with('mataPelajaran')->firstOrFail();
         $percobaan = PercobaanKuis::where('kuis_id', $kuis->id)
             ->where('siswa_id', $siswa->id)
             ->where('status', 'selesai')

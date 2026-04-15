@@ -8,12 +8,16 @@ use Illuminate\View\View;
 
 class ProfilController extends Controller
 {
-    public function index(): View
+    public function index(\App\Services\BadgeService $badgeService): View
     {
-        $siswa = Siswa::with(['lencana', 'logPoin' => fn ($q) => $q->latest()->take(10)])
+        $siswa = Siswa::with(['lencana', 'logPoin' => fn($q) => $q->latest()->take(10)])
             ->findOrFail(session('siswa_id'));
 
-        $totalKuis     = $siswa->percobaanKuis()->where('status', 'selesai')->count();
+        // Cek lencana
+        $badgeService->checkAndAward($siswa);
+        $siswa->load('lencana');
+
+        $totalKuis = $siswa->percobaanKuis()->where('status', 'selesai')->count();
         $rataRataNilai = $siswa->percobaanKuis()->where('status', 'selesai')->avg('nilai');
 
         $riwayatKuis = $siswa->percobaanKuis()
@@ -23,7 +27,10 @@ class ProfilController extends Controller
             ->paginate(10);
 
         return view('siswa.profil', compact(
-            'siswa', 'totalKuis', 'rataRataNilai', 'riwayatKuis'
+            'siswa',
+            'totalKuis',
+            'rataRataNilai',
+            'riwayatKuis'
         ));
     }
 }
