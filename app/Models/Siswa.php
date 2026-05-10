@@ -41,4 +41,34 @@ class Siswa extends Model
         return $this->hasMany(LogPoin::class);
     }
 
+    public function checkAndUpdateStreak(): bool
+    {
+        $now = now();
+        $lastActive = $this->terakhir_aktif;
+
+        if (!$lastActive) {
+            $this->streak_sekarang = 1;
+            $this->streak_terpanjang = max($this->streak_terpanjang, 1);
+            $this->terakhir_aktif = $now;
+            $this->save();
+            return true;
+        }
+
+        if (!$lastActive->isToday()) {
+            if ($lastActive->isYesterday()) {
+                $this->streak_sekarang += 1;
+                if ($this->streak_sekarang > $this->streak_terpanjang) {
+                    $this->streak_terpanjang = $this->streak_sekarang;
+                }
+            } else {
+                $this->streak_sekarang = 1;
+            }
+
+            $this->terakhir_aktif = $now;
+            $this->save();
+            return true;
+        }
+
+        return false;
+    }
 }

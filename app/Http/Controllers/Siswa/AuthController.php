@@ -33,7 +33,8 @@ class AuthController extends Controller
 
         session(['siswa_id' => $siswa->id, 'siswa' => $siswa]);
 
-        $siswa->update(['terakhir_aktif' => now()]);
+        // Streak dikelola oleh SiswaAuth middleware via checkAndUpdateStreak()
+        // Jangan update terakhir_aktif di sini agar logika kemarin/hari ini bisa berjalan
 
         return redirect()->route('siswa.dashboard');
     }

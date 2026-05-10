@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan:*)",
+      "Bash(php -r \"require ''''vendor/autoload.php''''; echo ''''autoload OK'''';\")",
+      "Bash(curl -sL \"https://assets.mixkit.co/music/preview/mixkit-fun-quiz-game-show-823.mp3\" -o /home/code/project-laravel/web-ipas/public/sounds/kuis-bgm.mp3)",
+      "Bash(curl -sL \"https://assets.mixkit.co/music/preview/mixkit-game-show-suspense-waiting-667.mp3\" -o /home/code/project-laravel/web-ipas/public/sounds/kuis-bgm.mp3)",
+      "Bash(curl -sIL \"https://assets.mixkit.co/music/preview/mixkit-fun-quiz-game-show-823.mp3\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}
