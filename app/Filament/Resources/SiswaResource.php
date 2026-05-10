@@ -26,10 +26,10 @@ class SiswaResource extends Resource
 {
     protected static ?string $model = Siswa::class;
 
-    protected static ?string $navigationIcon  = 'heroicon-o-user-group';
+    protected static ?string $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $navigationGroup = 'Data Siswa';
     protected static ?string $navigationLabel = 'Siswa';
-    protected static ?int    $navigationSort  = 1;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -78,17 +78,6 @@ class SiswaResource extends Resource
                 ->label('Aktif')
                 ->default(true),
 
-            TextInput::make('total_poin')
-                ->label('Total Poin')
-                ->numeric()
-                ->disabled()
-                ->dehydrated(false),
-
-            TextInput::make('streak_sekarang')
-                ->label('Streak Sekarang')
-                ->numeric()
-                ->disabled()
-                ->dehydrated(false),
         ]);
     }
 
@@ -116,12 +105,12 @@ class SiswaResource extends Resource
                 TextColumn::make('jenis_kelamin')
                     ->label('JK')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'L' => 'info',
                         'P' => 'pink',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn ($state) => $state === 'L' ? 'Laki-laki' : 'Perempuan'),
+                    ->formatStateUsing(fn($state) => $state === 'L' ? 'Laki-laki' : 'Perempuan'),
 
                 TextColumn::make('kode_siswa')
                     ->label('Kode')
@@ -184,10 +173,10 @@ class SiswaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListSiswas::route('/'),
+            'index' => Pages\ListSiswas::route('/'),
             'create' => Pages\CreateSiswa::route('/create'),
-            'edit'   => Pages\EditSiswa::route('/{record}/edit'),
-            'view'   => Pages\ViewSiswa::route('/{record}'),
+            'edit' => Pages\EditSiswa::route('/{record}/edit'),
+            'view' => Pages\ViewSiswa::route('/{record}'),
         ];
     }
 }
