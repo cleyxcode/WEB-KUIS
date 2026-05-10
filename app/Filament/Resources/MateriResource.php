@@ -15,11 +15,11 @@ class MateriResource extends Resource
 {
     protected static ?string $model = Materi::class;
 
-    protected static ?string $navigationIcon  = 'heroicon-o-book-open';
+    protected static ?string $navigationIcon = 'heroicon-o-book-open';
     protected static ?string $navigationGroup = 'Konten Pembelajaran';
     protected static ?string $navigationLabel = 'Materi';
-    protected static ?string $modelLabel      = 'Materi';
-    protected static ?int    $navigationSort  = 1;
+    protected static ?string $modelLabel = 'Materi';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -56,11 +56,17 @@ class MateriResource extends Resource
                     Forms\Components\RichEditor::make('konten')
                         ->label('Isi Materi')
                         ->toolbarButtons([
-                            'bold', 'italic', 'underline',
-                            'h2', 'h3',
-                            'bulletList', 'orderedList',
-                            'link', 'blockquote',
-                            'undo', 'redo',
+                            'bold',
+                            'italic',
+                            'underline',
+                            'h2',
+                            'h3',
+                            'bulletList',
+                            'orderedList',
+                            'link',
+                            'blockquote',
+                            'undo',
+                            'redo',
                         ])
                         ->columnSpanFull(),
                 ]),
@@ -71,12 +77,16 @@ class MateriResource extends Resource
                     Forms\Components\FileUpload::make('gambar_sampul')
                         ->label('Gambar Sampul')
                         ->image()
+                        ->disk('public')                // ← FIX
+                        ->visibility('public')          // ← FIX
                         ->directory('materi/sampul')
                         ->imagePreviewHeight('160')
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp']),
 
                     Forms\Components\FileUpload::make('file_pdf')
                         ->label('File PDF')
+                        ->disk('public')                // ← FIX
+                        ->visibility('public')          // ← FIX
                         ->acceptedFileTypes(['application/pdf'])
                         ->directory('materi/pdf')
                         ->maxSize(10240)
@@ -105,13 +115,14 @@ class MateriResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('gambar_sampul')
                     ->label('Sampul')
+                    ->disk('public')                    // ← FIX
                     ->circular()
-                    ->defaultImageUrl(fn () => null),
+                    ->defaultImageUrl(fn() => null),
 
                 Tables\Columns\TextColumn::make('mataPelajaran.nama')
                     ->label('Mata Pelajaran')
                     ->badge()
-                    ->color(fn ($record) => $record->mataPelajaran?->jenis === 'IPA' ? 'success' : 'info')
+                    ->color(fn($record) => $record->mataPelajaran?->jenis === 'IPA' ? 'success' : 'info')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('bab')
@@ -161,10 +172,9 @@ class MateriResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListMateris::route('/'),
+            'index' => Pages\ListMateris::route('/'),
             'create' => Pages\CreateMateri::route('/create'),
-            'edit'   => Pages\EditMateri::route('/{record}/edit'),
+            'edit' => Pages\EditMateri::route('/{record}/edit'),
         ];
     }
-
 }
