@@ -46,29 +46,39 @@ class Siswa extends Model
         $now = now();
         $lastActive = $this->terakhir_aktif;
 
+        // Belum pernah aktif sama sekali
         if (!$lastActive) {
             $this->streak_sekarang = 1;
-            $this->streak_terpanjang = max($this->streak_terpanjang, 1);
+            $this->streak_terpanjang = max($this->streak_terpanjang ?? 0, 1);
             $this->terakhir_aktif = $now;
             $this->save();
             return true;
         }
 
-        if (!$lastActive->isToday()) {
-            if ($lastActive->isYesterday()) {
-                $this->streak_sekarang += 1;
-                if ($this->streak_sekarang > $this->streak_terpanjang) {
-                    $this->streak_terpanjang = $this->streak_sekarang;
-                }
-            } else {
+        if ($lastActive->isToday()) {
+            // Sudah aktif hari ini — cek jika streak masih 0 (data lama yang belum ter-inisialisasi)
+            if ($this->streak_sekarang == 0) {
                 $this->streak_sekarang = 1;
+                $this->streak_terpanjang = max($this->streak_terpanjang ?? 0, 1);
+                $this->save();
+                return true;
             }
-
-            $this->terakhir_aktif = $now;
-            $this->save();
-            return true;
+            return false; // Sudah dihitung hari ini, tidak perlu update
         }
 
-        return false;
+        if ($lastActive->isYesterday()) {
+            // Aktif hari berturut-turut, tambah streak
+            $this->streak_sekarang += 1;
+            if ($this->streak_sekarang > $this->streak_terpanjang) {
+                $this->streak_terpanjang = $this->streak_sekarang;
+            }
+        } else {
+            // Lebih dari sehari tidak aktif, reset streak
+            $this->streak_sekarang = 1;
+        }
+
+        $this->terakhir_aktif = $now;
+        $this->save();
+        return true;
     }
 }
